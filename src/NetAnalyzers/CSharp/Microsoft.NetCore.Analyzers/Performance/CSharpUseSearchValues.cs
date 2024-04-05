@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -114,8 +115,19 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
             }
             else
             {
+                IOperation? operation;
+                try
+                {
+                    operation = semanticModel.GetOperation(expression);
+                }
+                catch (Exception ex)
+                {
+                    Environment.FailFast(ex.Message, ex);
+                    throw;
+                }
+
                 return
-                    semanticModel.GetOperation(expression) is { } operation &&
+                    operation is not null &&
                     IsConstantByteOrCharCollectionExpression(operation, values, out length);
             }
 
